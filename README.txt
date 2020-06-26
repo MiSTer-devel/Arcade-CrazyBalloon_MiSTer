@@ -1,6 +1,6 @@
 ---------------------------------------------------------------------------------
 -- 
--- Arcade version of Astrocade for MiSTer - Mike Coates
+-- Arcade version of Crazy Balloon for MiSTer - Mike Coates
 --
 -- V 1.0 15/06/2020 - Mike Coates
 ---------------------------------------------------------------------------------
