@@ -134,11 +134,15 @@ assign USER_OUT = '1;
 
 assign AUDIO_S   = 1;
 
+assign VGA_F1    = 0;
+assign VGA_SCALER= 0;
+
 // Use in Gorf to drive rank lights (1-6 = rank lights, 7 = joystick on/off ?)
 assign LED_USER  = ioctl_download;
 assign LED_DISK  = 0;
 assign LED_POWER = 0;
 
+assign {FB_PAL_CLK, FB_FORCE_BLANK, FB_PAL_ADDR, FB_PAL_DOUT, FB_PAL_WR} = '0;
 
 wire [1:0] ar = status[20:19];
 
@@ -181,7 +185,7 @@ pll pll
 
 // Divider for other clocks (7474 and 74161 on PCB)
 always @(posedge clk_sys) begin
-	clk_div <= clk_div + 1;
+	clk_div <= clk_div + 1'b1;
 end
 
 ///////////////////////////////////////////////////
