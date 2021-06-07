@@ -163,7 +163,7 @@ localparam CONF_STR = {
 	"R0,Reset;",
 	"J1,Start 1P,Start 2P,Coin;",
 	"jn,Start,Select,R;",
-	"jp,Start,,Select;",
+	"jp,Start,Select,R;",
 	"V,v",`BUILD_DATE
 };
 
@@ -239,7 +239,7 @@ always @(posedge clk_sys) if (ioctl_wr && (ioctl_index==254) && !ioctl_addr[24:3
 
 // Combined buttons
 wire B1_S = joy1[4];
-wire B2_S = joy1[5];
+wire B2_S = joy1[5] | joy2[4];
 wire B1_C = joy1[6];
 
 wire B1_U = joy1[3];
