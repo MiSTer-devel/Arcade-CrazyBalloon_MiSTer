@@ -167,7 +167,7 @@ begin
     end if;
   end process;
 
-  p_sync_comb : process(hcnt, vcnt)
+  p_sync_comb : process(hcnt, vcnt, hsync_start)
   begin
     do_hsync <= (hcnt = hsync_start);
     set_vblank <= (vcnt = "111111111"); -- 1FF
