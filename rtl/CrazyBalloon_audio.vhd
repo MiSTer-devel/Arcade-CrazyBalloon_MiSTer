@@ -4,6 +4,7 @@
 -- Mike Coates
 --
 -- version 001 initial release
+--         002 fix recurring sample play
 --
 library ieee;
   use ieee.std_logic_1164.all;
@@ -53,6 +54,7 @@ architecture RTL of CRAZYBALLOON_AUDIO is
 	signal SAMPLE_ADDR  : std_logic_vector(15 downto 0) := (others => '1');
 	signal SAMPLE_END   : std_logic_vector(15 downto 0) := (others => '0');
 	signal SAMPLE_PLAY  : std_logic := '0';
+	signal LAST_EXPLODE : std_logic := '0';
 
 begin
 	--
@@ -178,16 +180,18 @@ begin
 			if I_LAUGH='0' then				-- I_LAUGH connected to reset
 				R_COUNT    <= 0;
 				W_4J_R_OUT <= '0';
-			elsif R_COUNT = L_STOP then
-				R_COUNT <= 0;
-				if L_COUNT > 480 then		-- Update stop point for next pass
-					L_STOP <= 480;
-				else 
-					L_STOP <= L_COUNT;
-				end if;
-				W_4J_R_OUT <= not W_4J_R_OUT;
 			else
-				R_COUNT <= R_COUNT + 1;
+				if R_COUNT = L_STOP then
+					R_COUNT <= 0;
+					if L_COUNT > 480 then		-- Update stop point for next pass
+						L_STOP <= 480;
+					else 
+						L_STOP <= L_COUNT;
+					end if;
+					W_4J_R_OUT <= not W_4J_R_OUT;
+				else
+					R_COUNT <= R_COUNT + 1;
+				end if;
 			end if;
 		end if;
 	end process;
@@ -224,31 +228,40 @@ begin
 			if I_RESET='0' then
 				SAMPLE_PLAY <= '0';
 			else
+
+				-- Explode seems to be one shot, over-rides all others?
+				if LAST_EXPLODE = '1' and I_EXPLODE='0' then
+					SAMPLE_PLAY <= '1';
+					SAMPLE_ADDR <= x"7341";
+					SAMPLE_END  <= x"893E";
+				end if;
+
 				if SAMPLE_PLAY='0' then
-					-- select sample to play (order of priority, it sometimes overlaps them, but only one plays)
-					if I_BREATH='1' then
+					if I_EXPLODE='0' then
 						SAMPLE_PLAY <= '1';
-						SAMPLE_ADDR <= x"32A7";
-						SAMPLE_END  <= x"7340";						
-					elsif I_APPEAR='1' then
-						SAMPLE_PLAY <= '1';
-						SAMPLE_ADDR <= x"0000";
-						SAMPLE_END  <= x"32A6";
-					elsif I_EXPLODE='1' then
-						SAMPLE_PLAY <= '1';
-						SAMPLE_ADDR <= x"7341";
-						SAMPLE_END  <= x"893E";
+						-- select sample to play (order of priority, it sometimes overlaps them, but only one plays)
+						if I_BREATH='1' then
+							SAMPLE_ADDR <= x"32A7";
+							SAMPLE_END  <= x"7340";						
+						else
+							if I_APPEAR='1' then
+								SAMPLE_ADDR <= x"0000";
+								SAMPLE_END  <= x"32A6";
+							end if;
+						end if;
 					end if;
 					SAMPLE_OUT <= (others => '0');
 				else
 					SAMPLE_OUT <= SAMPLE_DATA;
 					
-					if SAMPLE_ADDR=SAMPLE_END then
+					if SAMPLE_ADDR = SAMPLE_END then
 						SAMPLE_PLAY <= '0';
 					else
 						SAMPLE_ADDR <= SAMPLE_ADDR + '1';
 					end if;				
 				end if;
+				-- Save last setting
+				LAST_EXPLODE <= I_EXPLODE;
 			end if;
 		end if;
 	end process;
